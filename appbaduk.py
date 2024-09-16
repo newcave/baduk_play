@@ -167,8 +167,7 @@ def evaluate_position(board, move, player):
     place_stone(board_copy, move[0], move[1], player)
 
     # 중앙에 가까울수록 점수를 높임
-
-center_x, center_y = board.shape[0] // 2, board.shape[1] // 2
+    center_x, center_y = board.shape[0] // 2, board.shape[1] // 2
     distance_to_center = np.sqrt((move[0] - center_x) ** 2 + (move[1] - center_y) ** 2)
     score = max(0, board_size - distance_to_center)
 
