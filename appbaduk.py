@@ -25,8 +25,6 @@ def display_board(board):
 
 # 바둑판에 돌을 두는 함수
 def place_stone(board, x, y, player):
-    x -= 1  # 입력값을 0-based 인덱스로 변환
-    y -= 1  # 입력값을 0-based 인덱스로 변환
     if board[x, y] == 0:
         board[x, y] = player
         capture_stones(board, x, y, player)
@@ -94,15 +92,15 @@ def mcts_ai_move(board):
 
     # 가장 좋은 수를 선택하여 둠
     if best_move:
-        place_stone(board, best_move[0] + 1, best_move[1] + 1, 2)  # 0-based에서 1-based로 변환
-        st.write(f'AI가 ({best_move[0] + 1}, {best_move[1] + 1}) 위치에 돌을 두었습니다.')
+        place_stone(board, best_move[0], best_move[1], 2)
+        st.write(f'AI가 ({best_move[0]}, {best_move[1]}) 위치에 돌을 두었습니다.')
     else:
         st.write('더 이상 둘 수 있는 위치가 없습니다.')
 
 # 새로운 평가 함수: 목적에 맞는 수를 선택하도록 함
 def evaluate_position(board, move, player):
     board_copy = board.copy()
-    place_stone(board_copy, move[0] + 1, move[1] + 1, player)  # 0-based에서 1-based로 변환
+    place_stone(board_copy, move[0], move[1], player)
 
     # 중앙에 가까울수록 점수를 높임
     center_x, center_y = board.shape[0] // 2, board.shape[1] // 2
@@ -176,8 +174,8 @@ def bfs_check_territory(board, x, y, visited):
 
 # 사용자 입력
 col1, col2 = st.columns(2)
-x = col1.number_input('y 세로 좌표 (1-' + str(board_size) + ')', min_value=1, max_value=board_size, step=1)
-y = col2.number_input('x 가로 좌표 (1-' + str(board_size) + ')', min_value=1, max_value=board_size, step=1)
+x = col1.number_input('y 세로 좌표 (0-' + str(board_size - 1) + ')', min_value=0, max_value=board_size - 1, step=1)
+y = col2.number_input('x 가로 좌표 (0-' + str(board_size - 1) + ')', min_value=0, max_value=board_size - 1, step=1)
 
 # 돌 두기 버튼
 if st.button('돌 두기'):
