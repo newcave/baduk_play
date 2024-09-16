@@ -72,15 +72,15 @@ def remove_group(board, x, y, player):
             if 0 <= nx < 9 and 0 <= ny < 9 and board[nx, ny] == player:
                 stack.append((nx, ny))
 
-# 몬테카를로 트리 탐색 알고리즘을 사용한 간단한 AI
+# 개선된 몬테카를로 트리 탐색 알고리즘을 사용한 AI
 def mcts_ai_move(board):
     empty_positions = list(zip(*np.where(board == 0)))
     best_move = None
-    best_score = -1
+    best_score = float('-inf')
 
-    # 모든 빈 자리를 시뮬레이션하여 승률이 가장 높은 수를 선택
+    # 모든 빈 자리를 시뮬레이션하여 가장 좋은 수를 선택
     for move in empty_positions:
-        score = simulate_random_playout(board, move, player=2)
+        score = evaluate_position(board, move, player=2)
         if score > best_score:
             best_score = score
             best_move = move
@@ -92,31 +92,80 @@ def mcts_ai_move(board):
     else:
         st.write('더 이상 둘 수 있는 위치가 없습니다.')
 
-# 무작위 시뮬레이션을 통해 각 수의 승률을 계산
-def simulate_random_playout(board, move, player):
+# 새로운 평가 함수: 목적에 맞는 수를 선택하도록 함
+def evaluate_position(board, move, player):
     board_copy = board.copy()
     place_stone(board_copy, move[0], move[1], player)
 
-    # 중앙에서 멀어질수록 점수가 낮아짐 (중앙 집중형 전략)
+    # 중앙에 가까울수록 점수를 높임
     center_x, center_y = board.shape[0] // 2, board.shape[1] // 2
     distance_to_center = np.sqrt((move[0] - center_x) ** 2 + (move[1] - center_y) ** 2)
-    score = max(0, 9 - distance_to_center)  # 중앙에 가까울수록 높은 점수
+    score = max(0, 9 - distance_to_center)
 
     # AI 돌이 1, 2선을 피하도록 보정
     if move[0] in [0, 1, 7, 8] or move[1] in [0, 1, 7, 8]:
         score -= 10  # 1선과 2선은 불리한 위치로 간주하여 점수 감소
 
-    # 시뮬레이션 반복하여 점수 보정 (단순한 버전)
-    current_player = 3 - player  # 교대
-    while True:
-        empty_positions = list(zip(*np.where(board_copy == 0)))
-        if not empty_positions:
-            break
-        random_move = random.choice(empty_positions)
-        place_stone(board_copy, random_move[0], random_move[1], current_player)
-        current_player = 3 - current_player  # 교대
+    # 상대방 돌을 잡는 경우 점수 추가
+    captured = count_captured_stones(board_copy, player)
+    score += captured * 5  # 돌을 잡을수록 높은 점수
+
+    # 집의 수를 기반으로 점수를 계산
+    territory_score = calculate_territory(board_copy, player)
+    score += territory_score
 
     return score
+
+# 잡힌 돌의 수를 계산하는 함수
+def count_captured_stones(board, player):
+    opponent = 3 - player
+    captured_count = 0
+    for x in range(9):
+        for y in range(9):
+            if board[x, y] == opponent and not has_liberty(board, x, y, opponent):
+                captured_count += 1
+    return captured_count
+
+# 집의 수를 계산하는 함수
+def calculate_territory(board, player):
+    visited = set()
+    player_territory = 0
+    opponent = 3 - player
+
+    for x in range(9):
+        for y in range(9):
+            if board[x, y] == 0 and (x, y) not in visited:
+                territory, owner = bfs_check_territory(board, x, y, visited)
+                if owner == player:
+                    player_territory += territory
+
+    return player_territory
+
+# BFS를 사용하여 특정 영역의 집과 소유자를 판단하는 함수
+def bfs_check_territory(board, x, y, visited):
+    queue = [(x, y)]
+    territory = 0
+    owner = None
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    while queue:
+        cx, cy = queue.pop(0)
+        if (cx, cy) in visited:
+            continue
+        visited.add((cx, cy))
+        territory += 1
+
+        for dx, dy in directions:
+            nx, ny = cx + dx, cy + dy
+            if 0 <= nx < 9 and 0 <= ny < 9:
+                if board[nx, ny] == 0 and (nx, ny) not in visited:
+                    queue.append((nx, ny))
+                elif owner is None:
+                    owner = board[nx, ny]
+                elif board[nx, ny] != 0 and board[nx, ny] != owner:
+                    return territory, None
+
+    return territory, owner
 
 # 사용자 입력
 col1, col2 = st.columns(2)
