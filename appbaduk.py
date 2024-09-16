@@ -7,12 +7,12 @@ if 'board' not in st.session_state:
     st.session_state.board = np.zeros((9, 9), dtype=int)
 
 # 사용자 인터페이스 설정
-st.title('간단한 바둑 게임 (9x9)')
+st.title('Simple AI Baduk(9x9) 덤벼라 김서진!')
 st.write('플레이어는 흑(1)입니다. AI는 백(2)입니다.')
 
 # 바둑판을 출력하는 함수
 def display_board(board):
-    st.write('### 바둑판 상태')
+    st.write('### Board Status')
     board_display = board.astype(str)  # 배열을 문자열로 변환
     board_display[board == 1] = "●"  # 흑돌
     board_display[board == 2] = "○"  # 백돌
@@ -169,8 +169,8 @@ def bfs_check_territory(board, x, y, visited):
 
 # 사용자 입력
 col1, col2 = st.columns(2)
-x = col1.number_input('x 좌표 (0-8)', min_value=0, max_value=8, step=1)
-y = col2.number_input('y 좌표 (0-8)', min_value=0, max_value=8, step=1)
+x = col1.number_input('y 세로 좌표 (0-8)', min_value=0, max_value=8, step=1)
+y = col2.number_input('x 가로 좌표 (0-8)', min_value=0, max_value=8, step=1)
 
 # 돌 두기 버튼
 if st.button('돌 두기'):
