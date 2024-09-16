@@ -5,9 +5,11 @@ import random
 # 바둑판 초기화 (9x9)
 if 'board' not in st.session_state:
     st.session_state.board = np.zeros((9, 9), dtype=int)
+if 'move_count' not in st.session_state:
+    st.session_state.move_count = 0  # 총 놓은 돌의 수
 
 # 사용자 인터페이스 설정
-st.title('Simple AI Baduk(9x9) 덤벼라 김서진!')
+st.title('Simple AI Baduk (9x9) 덤벼라 김서진!')
 st.write('플레이어는 흑(1)입니다. AI는 백(2)입니다.')
 
 # 바둑판을 출력하는 함수
@@ -24,6 +26,7 @@ def place_stone(board, x, y, player):
     if board[x, y] == 0:
         board[x, y] = player
         capture_stones(board, x, y, player)
+        st.session_state.move_count += 1  # 돌을 둘 때마다 수 증가
         return True
     else:
         st.write('해당 위치에 이미 돌이 있습니다. 다른 위치를 선택하세요.')
@@ -178,11 +181,4 @@ if st.button('돌 두기'):
         mcts_ai_move(st.session_state.board)
     display_board(st.session_state.board)
 else:
-    display_board(st.session_state.board)
-
-# 집 계산 버튼
-if st.button('집 계산'):
-    black_territory = calculate_territory(st.session_state.board, 1)
-    white_territory = calculate_territory(st.session_state.board, 2)
-    st.write(f'흑(●)의 집: {black_territory} 개')
-    st.write(f'백(○)의 집: {white_territory} 개')
+    display_board
