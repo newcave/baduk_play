@@ -179,3 +179,10 @@ if st.button('돌 두기'):
     display_board(st.session_state.board)
 else:
     display_board(st.session_state.board)
+
+# 집 계산 버튼
+if st.button('집 계산'):
+    black_territory = calculate_territory(st.session_state.board, 1)
+    white_territory = calculate_territory(st.session_state.board, 2)
+    st.write(f'흑(●)의 집: {black_territory} 개')
+    st.write(f'백(○)의 집: {white_territory} 개')
