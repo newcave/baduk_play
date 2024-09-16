@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
 import random
-import math
 
 # 바둑판 크기 선택 드롭다운 메뉴
 board_size = st.selectbox('바둑판 크기를 선택하세요', options=[19, 13, 9, 7], index=2)  # 기본값은 9x9
@@ -78,88 +77,25 @@ def remove_group(board, x, y, player):
             if 0 <= nx < board_size and 0 <= ny < board_size and board[nx, ny] == player:
                 stack.append((nx, ny))
 
-# MCTS 노드 클래스
-class Node:
-    def __init__(self, state, parent=None, action=None):
-        self.state = state  # 바둑판 상태
-        self.parent = parent
-        self.action = action  # 이 노드로 이어지는 행동
-        self.children = {}  # 자식 노드
-        self.visits = 0  # 방문 횟수
-        self.wins = 0  # 승리 횟수
-
-# 개선된 몬테카를로 트리 탐색 알고리즘 (UCT 적용)
+# 개선된 몬테카를로 트리 탐색 알고리즘을 사용한 AI
 def mcts_ai_move(board):
-    root = Node(board.copy())  # 루트 노드 생성
-
-    # MCTS 시뮬레이션 반복
-    for _ in range(1000):  # 시뮬레이션 횟수 (적절한 값으로 조정)
-        node = root
-        while node.children:  # Selection & Expansion
-            action = uct_select(node)
-            node = node.children[action]
-
-        if node.visits > 0:  # Expansion
-            for action in get_legal_moves(node.state):
-                new_state = node.state.copy()
-                place_stone(new_state, action[0], action[1], 2)  # AI의 수
-                node.children[action] = Node(new_state, parent=node, action=action)
-            action = random.choice(list(node.children.keys()))
-            node = node.children[action]
-
-        result = simulate(node.state)  # Simulation & Backpropagation
-        while node is not None:
-            node.visits += 1
-            node.wins += result  # AI의 승리면 1, 패배면 0
-            node = node.parent
-
-    # 가장 많이 방문한 자식 노드 선택
-    best_action = max(root.children, key=lambda action: root.children[action].visits)
-    place_stone(board, best_action[0], best_action[1], 2)
-    st.write(f'AI가 ({best_action[0]}, {best_action[1]}) 위치에 돌을 두었습니다.')
-
-# UCT 알고리즘을 사용하여 다음 노드를 선택
-def uct_select(node):
+    empty_positions = list(zip(*np.where(board == 0)))
+    best_move = None
     best_score = float('-inf')
-    best_action = None
 
-    for action, child in node.children.items():
-        if child.visits == 0:
-            score = float('inf')  # 탐색되지 않은 노드는 무한대 점수
-        else:
-            exploitation = child.wins / child.visits
-            exploration = math.sqrt(2 * math.log(node.visits) / child.visits)
-            score = exploitation + exploration
-
+    # 모든 빈 자리를 시뮬레이션하여 가장 좋은 수를 선택
+    for move in empty_positions:
+        score = evaluate_position(board, move, player=2)
         if score > best_score:
             best_score = score
-            best_action = action
+            best_move = move
 
-    return best_action
-
-# 합법적인 수를 반환하는 함수
-def get_legal_moves(board):
-    empty_positions = list(zip(*np.where(board == 0)))
-    return empty_positions
-
-# 시뮬레이션 함수 (단순 랜덤 플레이)
-def simulate(board):
-    current_player = 1  # 흑부터 시작
-    while True:
-        legal_moves = get_legal_moves(board)
-        if not legal_moves:
-            break  # 더 이상 둘 수 없으면 종료
-        move = random.choice(legal_moves)
-        place_stone(board, move[0], move[1], current_player)
-        current_player = 3 - current_player  # 플레이어 교체
-
-    # 결과 평가 (단순히 집 수 비교)
-    black_territory = calculate_territory(board, 1)
-    white_territory = calculate_territory(board, 2)
-    if black_territory > white_territory:
-        return 0  # AI (백) 패배
+    # 가장 좋은 수를 선택하여 둠
+    if best_move:
+        place_stone(board, best_move[0], best_move[1], 2)
+        st.write(f'AI가 ({best_move[0]}, {best_move[1]}) 위치에 돌을 두었습니다.')
     else:
-        return 1  # AI (백) 승리
+        st.write('더 이상 둘 수 있는 위치가 없습니다.')
 
 # 새로운 평가 함수: 목적에 맞는 수를 선택하도록 함
 def evaluate_position(board, move, player):
