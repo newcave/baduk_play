@@ -3,8 +3,8 @@ import numpy as np
 import random
 
 # 바둑판 초기화 (9x9)
-board_size = 9
-board = np.zeros((board_size, board_size), dtype=int)
+if 'board' not in st.session_state:
+    st.session_state.board = np.zeros((9, 9), dtype=int)
 
 # 사용자 인터페이스 설정
 st.title('간단한 바둑 게임')
@@ -13,7 +13,11 @@ st.write('플레이어는 흑(1)입니다. AI는 백(2)입니다.')
 # 바둑판을 출력하는 함수
 def display_board(board):
     st.write('### 바둑판 상태')
-    st.write(board)
+    board_display = board.astype(str)  # 배열을 문자열로 변환
+    board_display[board == 1] = "●"  # 흑돌
+    board_display[board == 2] = "○"  # 백돌
+    board_display[board == 0] = " "  # 빈칸
+    st.table(board_display)  # 표 형식으로 바둑판 표시
 
 # 바둑판에 돌을 두는 함수
 def place_stone(board, x, y, player):
@@ -41,6 +45,8 @@ y = col2.number_input('y 좌표 (0-8)', min_value=0, max_value=8, step=1)
 
 # 돌 두기 버튼
 if st.button('돌 두기'):
-    if place_stone(board, x, y, 1):
-        ai_move(board)
-    display_board(board)
+    if place_stone(st.session_state.board, x, y, 1):
+        ai_move(st.session_state.board)
+    display_board(st.session_state.board)
+else:
+    display_board(st.session_state.board)
