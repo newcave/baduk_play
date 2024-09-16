@@ -1,0 +1,46 @@
+import streamlit as st
+import numpy as np
+import random
+
+# 바둑판 초기화 (9x9)
+board_size = 9
+board = np.zeros((board_size, board_size), dtype=int)
+
+# 사용자 인터페이스 설정
+st.title('간단한 바둑 게임')
+st.write('플레이어는 흑(1)입니다. AI는 백(2)입니다.')
+
+# 바둑판을 출력하는 함수
+def display_board(board):
+    st.write('### 바둑판 상태')
+    st.write(board)
+
+# 바둑판에 돌을 두는 함수
+def place_stone(board, x, y, player):
+    if board[x, y] == 0:
+        board[x, y] = player
+        return True
+    else:
+        st.write('해당 위치에 이미 돌이 있습니다. 다른 위치를 선택하세요.')
+        return False
+
+# 간단한 AI (무작위로 수를 둠)
+def ai_move(board):
+    empty_positions = list(zip(*np.where(board == 0)))
+    if empty_positions:
+        move = random.choice(empty_positions)
+        place_stone(board, move[0], move[1], 2)
+        st.write(f'AI가 ({move[0]}, {move[1]}) 위치에 돌을 두었습니다.')
+    else:
+        st.write('더 이상 둘 수 있는 위치가 없습니다.')
+
+# 사용자 입력
+col1, col2 = st.columns(2)
+x = col1.number_input('x 좌표 (0-8)', min_value=0, max_value=8, step=1)
+y = col2.number_input('y 좌표 (0-8)', min_value=0, max_value=8, step=1)
+
+# 돌 두기 버튼
+if st.button('돌 두기'):
+    if place_stone(board, x, y, 1):
+        ai_move(board)
+    display_board(board)
