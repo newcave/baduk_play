@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import random
 
 # 바둑판 크기 선택 드롭다운 메뉴
