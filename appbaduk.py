@@ -21,7 +21,12 @@ def display_board(board):
     board_display[board == 1] = "●"  # 흑돌
     board_display[board == 2] = "○"  # 백돌
     board_display[board == 0] = " "  # 빈칸
-    st.table(board_display)  # 표 형식으로 바둑판 표시
+
+    # 바둑판에 좌표 추가 (1부터 시작)
+    row_labels = [str(i + 1) for i in range(board_size)]
+    col_labels = [str(i + 1) for i in range(board_size)]
+    board_display_df = pd.DataFrame(board_display, index=row_labels, columns=col_labels)
+    st.table(board_display_df)  # 표 형식으로 바둑판 표시
 
 # 바둑판에 돌을 두는 함수
 def place_stone(board, x, y, player):
