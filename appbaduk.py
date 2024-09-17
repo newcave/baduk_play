@@ -24,10 +24,10 @@ def display_board(board):
     board_display[board == 0] = " "  # 빈칸
 
     # 바둑판에 좌표 추가 (1부터 시작)
-    row_labels = [str(i) for i in range(board_size)]
-#   row_labels = [str(i + 1) for i in range(board_size)]
-    col_labels = [str(i) for i in range(board_size)]
-#   col_labels = [str(i + 1) for i in range(board_size)]
+#    row_labels = [str(i) for i in range(board_size)]
+    row_labels = [str(i + 1) for i in range(board_size)]
+#    col_labels = [str(i) for i in range(board_size)]
+    col_labels = [str(i + 1) for i in range(board_size)]
 
     board_display_df = pd.DataFrame(board_display, index=row_labels, columns=col_labels)
     st.table(board_display_df)  # 표 형식으로 바둑판 표시
